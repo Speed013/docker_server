@@ -1,17 +1,17 @@
 # configured aws provider with proper credentials
 provider "aws" {
   region = "us-east-1"
-  profile= "yusuf"
+  profile= "moyosore"
 }
 
 # Create a remote backend for your terraform 
 terraform {
   backend "s3" {
-    bucket = "austinobioma-docker-tfstate"
+    bucket = "moyosore-docker-tfstate"
     dynamodb_table = "app-state"
     key    = "LockID"
     region = "us-east-1"
-    profile = "austinobioma-realcloud"
+    profile = "moyosore"
   }
 }
 
@@ -71,10 +71,58 @@ resource "aws_security_group" "ec2_security_group" {
     cidr_blocks      = ["0.0.0.0/0"]
   }
 
-  ingress {
-    description      = "http nginx access"
+ingress {
+    description      = "http customport access"
     from_port        = 9090
     to_port          = 9090
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description      = "http customport access"
+    from_port        = 9003
+    to_port          = 9003
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+ingress {
+    description      = "http customport access"
+    from_port        = 3000
+    to_port          = 3000
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+ingress {
+    description      = "http customport access"
+    from_port        = 32768
+    to_port          = 32768
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description      = "http customport access"
+    from_port        = 8090
+    to_port          = 8090
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description      = "http customport access"
+    from_port        = 8070
+    to_port          = 8070
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    description      = "http proxy-nginx access"
+    from_port        = 2000
+    to_port          = 2000
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
   }
@@ -113,10 +161,10 @@ data "aws_ami" "ubuntu" {
 # launch the ec2 instance and install website
 resource "aws_instance" "ec2_instance1" {
   ami                    = data.aws_ami.ubuntu.id
-  instance_type          = "t2.micro"
+  instance_type          = "t2.large"
   subnet_id              = aws_default_subnet.default_az1.id
   vpc_security_group_ids = [aws_security_group.ec2_security_group.id]
-  key_name               = "Feb-Class"
+  key_name               = "tnk"
   user_data            = "${file("docker-install.sh")}"
 
   tags = {
@@ -126,5 +174,5 @@ resource "aws_instance" "ec2_instance1" {
 
 # print the url of the docker server
 output "website_url" {
-  value     = join ("", ["http://", aws_instance.ec2_instance1.public_dns, ":", "8080"])
+  value     = join ("", ["http://", aws_instance.ec2_instance1.public_ip, ":", "8080"])
 }
